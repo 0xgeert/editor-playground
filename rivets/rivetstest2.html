@@ -1,0 +1,119 @@
+<html>
+<head>
+  <title>
+    asdsad
+  </title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- Bootstrap -->
+    <link href="css/bootstrap.css" rel="stylesheet" media="screen">
+  <link rel="stylesheet" href="css/jquery-ui/jquery-ui-1.10.1.custom.css">
+  <link rel="stylesheet" href="css/font-awesome.min.css">
+  
+  <style>
+    #auction{
+      margin: 20px;
+    }
+
+  </style>
+  
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script type='text/javascript' src='https://raw.github.com/documentcloud/underscore/master/underscore-min.js'></script>
+  <script src="js/watch.js"></script>
+  <script src="js/rivets.js"></script>
+  
+  <script type="text/javascript">
+    
+    $(function(){
+      // ADAPTER TO LET RIVETS.JS WORK WITH WATCH.JS
+      rivets.configure({
+        adapter: {
+          subscribe: function(obj, keypath, callback) {
+            watch(obj, keypath, callback)
+          },
+          unsubscribe: function(obj, keypath, callback) {
+            unwatch(obj, keypath, callback)
+          },
+          read: function(obj, keypath) {
+            return obj[keypath]
+          },
+          publish: function(obj, keypath, value) {
+            console.log(value);
+            // obj[keypath] = value
+          }
+        }
+      })
+
+
+      // LIVE INPUT CUSTOM BINDER
+      rivets.binders.input = {
+        publishes: true,
+        routine: rivets.binders.value.routine,
+        bind: function(el) {
+          el.addEventListener('input', this.publish)
+        },
+        unbind: function(el) {
+          el.removeEventListener('input', this.publish)
+        }
+      }
+                
+      // LENGTH FORMATTER
+
+      rivets.formatters.length = function(value) {
+        return value.length
+      }
+
+      // BINDING PLAIN JAVASCRIPT OBJECTS TO THE VIEW
+
+      var item = {
+        title: "Rivets.js + Watch.js!",
+        text: "change me",
+        tags: ["data binding", "DOM templating"]
+      }
+                
+      var viewModel = {
+        addTag: function() {
+          item.tags.push(item.newTag)
+          item.newTag = ""
+        }
+      }
+
+      var el = document.getElementById('view');
+
+      rivets.bind(el, {item: item, vm: viewModel})
+
+     
+    });
+
+  </script>
+
+</head>
+<body>
+
+ <div id="view">
+  <section>
+    <h1 data-text="item.title"></h1>
+    <p>Binding text using data-text <code data-text="item.text"></code>.</p>
+    <p>Text Value: <input data-input="item.text"></p>
+  </section>
+  <section>
+    <p>
+      Binding an array using data-each 
+      <code><span data-text="item.tags | length"></span> tags</code>.
+    </p>
+    <p>
+      <input data-value="item.newTag">
+      <button data-on-click="vm.addTag">add</button>
+    </p>
+    <ul>
+      <li data-each-tag="item.tags">
+        <span data-text=".tag"></span>
+      </li>
+    </ul>
+  </section>
+</div>
+
+
+
+</body>
+</html>

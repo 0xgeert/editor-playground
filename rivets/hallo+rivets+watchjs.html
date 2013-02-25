@@ -1,0 +1,126 @@
+<html>
+<head>
+	<title>
+		asdsad
+	</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<!-- Bootstrap -->
+    <link href="css/bootstrap.css" rel="stylesheet" media="screen">
+	<link rel="stylesheet" href="css/jquery-ui/jquery-ui-1.10.1.custom.css">
+	<link rel="stylesheet" href="css/font-awesome.min.css">
+	
+	<style>
+		#auction{
+			margin: 20px;
+		}
+	</style>
+	
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+	<script src='https://raw.github.com/documentcloud/underscore/master/underscore-min.js'></script>
+	<script src="js/jquery-ui-1.10.1.custom.min.js"></script>
+	<script src="js/rangy/rangy-core.js"></script>
+	<script src="http://hallojs.org/js/hallo.js"></script>
+
+	<script src="js/watch.js"></script>
+	<script src="js/rivets.js"></script> <!-- from https://github.com/gbrits/rivets !! -->
+	<script  type="text/javascript">
+
+		//Watchjs adapter
+		rivets.configure({
+			//we don't want model to load view on init. This overwrites server-side rendered view with empty model
+			preloadData: false, 
+
+			//adapter for watchJS
+			adapter: {
+			    subscribe: function(obj, keypath, callback) {
+			      watch(obj, keypath, callback)
+			    },
+			    unsubscribe: function(obj, keypath, callback) {
+			      unwatch(obj, keypath, callback)
+			    },
+			    read: function(obj, keypath) {
+			      return obj[keypath]
+			    },
+			    publish: function(obj, keypath, value) {
+			      obj[keypath] = value
+			    }
+			}
+		});
+
+
+		//adapted from from http://stackoverflow.com/questions/12302131/rivets-js-and-contenteditable
+	    //CUSTOM TWO-WAY BINDER FOR CONTENTEDITABLE ELEMENTS
+		var bindingForContentEditable = function(respondOnKeypress){
+			var binding = {
+				routine: rivets.binders.text,
+				unbind: function(el) {
+					$(el).off('blur',this.callbackBlur);
+					$(el).off('hallomodified',this.callback);
+				}
+			};
+			binding.bind = function(el) {
+				var $el = $(el);
+				var self = this;
+				this.callback = function(e) {
+					console.log(e);
+					if (e.which == 13 || e.which == 9) {
+						e.preventDefault();
+						el.blur(); //cause callbackBlur to be called which publishes to model
+				  	}
+				  	if(respondOnKeypress){
+				  		rivets.config.adapter.publish(self.model, self.keypath, self.formattedValueFromView(el.textContent));
+				  		console.log(JSON.parse(JSON.stringify(self.model))); //fetch json
+				  	}
+				}
+				this.callbackBlur = function(){
+					rivets.config.adapter.publish(self.model, self.keypath, self.formattedValueFromView(el.textContent));
+					console.log(JSON.parse(JSON.stringify(self.model))); //fetch json
+				}
+				//NOTE: 'keydown' for this example (instead of 'input') because we want to capture 'enter' BEFORE that char added to content
+				
+				$(el).on('blur',this.callbackBlur);
+				$(el).on('hallomodified',this.callback);
+			}
+			return binding; 
+		};
+		var respondOnKeypress = false;
+		rivets.binders.inlineedit = bindingForContentEditable(respondOnKeypress);
+		rivets.binders.inlineeditrt = bindingForContentEditable(!respondOnKeypress);
+
+	</script>
+	<script type="text/javascript">
+		
+		$(function(){
+			$("#auction > h1").hallo({
+				plugins: {
+		            'halloformat': {},
+				}
+			});
+
+			var auction = {}
+			var view = rivets.bind($('#auction'), {auction: auction});
+
+			//this will bootstrap all values from view to model FOR BINDINGS FOR WHICH "publishes = TRUE"
+			view.publish(); 
+			
+			//Set data that explicitly exists in model here, this allows for bootastrapping model with view info 
+			//(from server-side snippet) first and afterwards loading model data if set. 
+			_.extend(auction,{"title" : "auction x"});	
+
+			console.log(JSON.parse(JSON.stringify(auction)));
+		});
+
+	</script>
+
+</head>
+<body>
+
+	<div id="auction">
+	  
+	  <h1 data-inlineeditrt="auction.title">Title</h1>
+	  <div data-text="auction.title"></div>
+	</div>
+
+</body>
+</html>
