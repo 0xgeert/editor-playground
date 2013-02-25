@@ -3,27 +3,12 @@
 	<title>
 		asdsad
 	</title>
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="viewport" content="width=device-width, initial-lscale=1.0">
 	
 	<!-- Bootstrap -->
     <link href="css/bootstrap.css" rel="stylesheet" media="screen">
 	<link rel="stylesheet" href="css/jquery-ui/jquery-ui-1.10.1.custom.css">
 	<link rel="stylesheet" href="css/font-awesome.min.css">
-</head>
-<body>
-	
-	
-	<style type="text/css">
-		#edit{
-			margin:20px 0 0 20px;
-		}
-	</style>
-
-	
-	<div id="edit">
-		<h1>Some awesome header here</h1>
-		<p>Some text here. How nice</p>
-	</div>
 
 	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 	<script src="js/jquery-ui-1.10.1.custom.min.js"></script>
@@ -32,18 +17,24 @@
 	<script type="text/javascript">
 		$(function(){
 			$("#edit > *").hallo({
-				editable: true,
 				plugins: {
-					//'halloindicator': {},
 		            'halloformat': {},
-		            'halloheadings': {},
-		            'hallojustify': {},
-		            'hallolists': {},
-		            'hallolink': {},
-		            'halloreundo': {},
 				}
 			});
 		});
 	</script>
+
+</head>
+<body>
+	<style type="text/css">
+		#edit{
+			margin:10px 0 0 20px;
+		}
+	</style>
+	<div id="edit">
+		<h1>Some awesomes header here</h1>
+		<p>Something extremel expesssrimental!</p>
+	</div>
+
 </body>
 </html>

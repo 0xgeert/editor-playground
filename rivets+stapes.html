@@ -1,0 +1,114 @@
+<html>
+<head>
+	<title>
+		asdsad
+	</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<!-- Bootstrap -->
+    <link href="css/bootstrap.css" rel="stylesheet" media="screen">
+	<link rel="stylesheet" href="css/jquery-ui/jquery-ui-1.10.1.custom.css">
+	<link rel="stylesheet" href="css/font-awesome.min.css">
+	
+	<style>
+		#auction{
+			margin: 20px;
+		}
+	</style>
+	
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+	<script type='text/javascript' src='https://raw.github.com/documentcloud/underscore/master/underscore-min.js'></script>
+	<script src="js/stapes/stapes.min.js"></script>
+	<script src="js/rivets.js"></script>
+	
+	<script type="text/javascript">
+		
+		//Stapes adapter
+		//https://raw.github.com/gist/3220406/b1852768e3060e493aa05cc296b9fbf0e4e93b48/stapes-adapter.js
+		rivets.configure({
+			preloadData: false, //we don't want model to load view on init. We want it the other way around
+			adapter: {
+
+			    subscribe: function(obj, keypath, callback) {
+					obj.on("change:" + keypath, callback);
+			    },
+
+			    unsubscribe: function(obj, keypath, callback) {
+			      	obj.off("change:" + keypath, callback);
+			    },
+
+			    read: function(obj, keypath) {
+			      	return obj.get(keypath);
+			    },
+
+			    publish: function(obj, keypath, value) {
+			    	obj.set(keypath, value);
+			    }
+			}
+		});
+
+		$(function(){
+			var Auction = Stapes.subclass({});
+			var auction = new Auction();
+			
+			// LIVE INPUT CUSTOM BINDER (updates on input not on blur)
+			rivets.binders.input = {
+			  publishes: true,
+			  routine: rivets.binders.value.routine,
+			  bind: function(el) {
+			    el.addEventListener('input', this.publish)
+			  },
+			  unbind: function(el) {
+			    el.removeEventListener('input', this.publish)
+			  }
+			}
+
+			//Support for two-way formatters: https://github.com/mikeric/rivets/pull/90
+			rivets.formatters.titleformat = {
+				 publish: function(value) { //from view to model
+				 	return 'awesome ' + value; 
+				 },
+				 read: function(value) { //from model to view
+				 	return value + ' is awesome'; 
+				 }	
+			};
+			
+
+			var view = rivets.bind($('#auction'), {auction: auction});
+
+			//this will bootstrap all values from view to model FOR BINDINGS FOR WHICH "publishes = TRUE"
+			view.publish(); 
+			
+			//Set data that explicitly exists in model here
+			//this allows for bootastrapping model with view info (from server-side snippet) first and afterwards loading model data if set. 
+			auction.set({
+				"title": "explicit Title from Model"}
+			);
+
+			//Test: read model
+			console.log(auction.getAll());
+			$("#but").click(function(){
+				console.log(auction.getAll());
+			});
+
+			//deregister all bindings (calls unsubscribe on adapter)
+			//view.unbind(); 
+		});
+
+	</script>
+
+</head>
+<body>
+
+	<div id="auction">
+	
+	  <h1 data-text="auction.title | test">Title</h1>
+	  <h2 data-text="auction.input"></h2> 
+	  <form >
+	  	<input type="text" id="inputel"  data-input="auction.input" value="default value"> 
+	  	<input id="but" type="button" value="check model"/>
+	  </form>
+	</div>
+
+</body>
+</html>
