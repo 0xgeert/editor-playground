@@ -1,0 +1,104 @@
+<html>
+<head>
+	<title>
+		asdsad
+	</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<!-- Bootstrap -->
+    <link href="css/bootstrap.css" rel="stylesheet" media="screen">
+	<link rel="stylesheet" href="css/jquery-ui/jquery-ui-1.10.1.custom.css">
+	<link rel="stylesheet" href="css/font-awesome.min.css">
+	
+	<style>
+		#auction{
+			margin: 20px;
+		}
+	</style>
+	
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+	<script type='text/javascript' src='https://raw.github.com/documentcloud/underscore/master/underscore-min.js'></script>
+	<script src="js/stapes/stapes.min.js"></script>
+	<script src="js/rivets.js"></script>
+	
+	<script type="text/javascript">
+
+		//Stapes adapter
+		//https://raw.github.com/gist/3220406/b1852768e3060e493aa05cc296b9fbf0e4e93b48/stapes-adapter.js
+		rivets.configure({
+			preloadData: false, //we don't want model to load view on init. We want it the other way around
+			adapter: {
+
+			    subscribe: function(obj, keypath, callback) {
+					obj.on("change:" + keypath, callback);
+			    },
+
+			    unsubscribe: function(obj, keypath, callback) {
+			      	obj.off("change:" + keypath, callback);
+			    },
+
+			    read: function(obj, keypath) {
+			    	console.log("read propname: "+  keypath);
+			      	return obj.get(keypath);
+			    },
+
+			    publish: function(obj, keypath, value) {
+			    	console.log("publish propname: "+  keypath);
+					obj.set(keypath,value);
+			    }
+			}
+		});
+
+
+		//from http://stackoverflow.com/questions/12302131/rivets-js-and-contenteditable
+	    // CUSTOM TWO-WAY BINDER FOR CONTENTEDITABLE ELEMENTS
+		rivets.binders['content-editable']= {
+		  routine: rivets.binders.text,
+		  bind: function(el) {
+		    var self = this;
+
+			//only save to model on enter or blur
+		    this.callback = function(e) {
+		    	if (e.which == 13 || e.which == 9) {
+					e.preventDefault();
+					el.blur();
+	          	}
+	          	//rivets.config.adapter.publish(self.model, self.keypath, el.textContent);
+		    }
+		    this.callbackBlur = function(){
+		    	rivets.config.adapter.publish(self.model, self.keypath, el.textContent);
+				console.log(self.model.getAll()); //fetch json
+		    }
+		    el.addEventListener('keydown', this.callback, false);
+		    el.addEventListener('blur', this.callbackBlur, false);
+		  },
+		  unbind: function(el) {
+		    el.removeEventListener('keydown', this.callback, false);
+		    el.removeEventListener('blur', this.callbackBlur, false);
+		  }
+		}
+
+		$(function(){
+			var Auction = Stapes.subclass({
+				constructor : function(title) {
+		            this.set("title", title);
+		        },
+			});
+			var auction = new Auction("Auction X");
+			var view = rivets.bind($('#auction'), {auction: auction});
+			
+		});
+
+	</script>
+
+</head>
+<body>
+
+	<div id="auction">
+	
+	  <h1 data-text="auction.title">Title</h1>
+	  <h2 data-content-editable="auction.subtitle.test" contenteditable="true">Some subtitle</h1>
+	</div>
+
+</body>
+</html>
